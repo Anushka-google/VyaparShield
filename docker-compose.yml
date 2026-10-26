@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nexusops_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nexusops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexusops_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-nexusops_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexusops} -d ${POSTGRES_DB:-nexusops_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nexusops_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexusops_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nexusops_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexusops_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+      - DATABASE_SYNC_URL=postgresql+psycopg2://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./backend:/app
+      - ./workers:/app/workers
+      - ./storage_data:/app/storage_data
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - nexusops_net
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexusops_worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+      - DATABASE_SYNC_URL=postgresql+psycopg2://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./backend:/app
+      - ./workers:/app/workers
+      - ./storage_data:/app/storage_data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A workers.celery_app worker -l info --concurrency=2
+    networks:
+      - nexusops_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nexusops_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - backend
+    networks:
+      - nexusops_net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  nexusops_net:
+    driver: bridge
