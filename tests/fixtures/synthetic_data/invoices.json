@@ -1,0 +1,102 @@
+[
+  {
+    "id": "i1000000-0000-0000-0000-000000000001",
+    "customer_id": "c1000000-0000-0000-0000-000000000001",
+    "invoice_number": "INV-2026-001",
+    "invoice_date": "2026-10-01",
+    "due_date": "2026-10-31",
+    "subtotal": "25000.0000",
+    "cgst_amount": "625.0000",
+    "sgst_amount": "625.0000",
+    "igst_amount": "0.0000",
+    "total_amount": "26250.0000",
+    "paid_amount": "0.0000",
+    "outstanding_balance": "26250.0000",
+    "status": "unpaid",
+    "lines": [
+      {
+        "description": "Combed Cotton Yarns 100kg",
+        "hsn_sac_code": "5205",
+        "quantity": "100.0000",
+        "unit_price": "250.0000",
+        "tax_rate": "5.00",
+        "line_total": "26250.0000"
+      }
+    ]
+  },
+  {
+    "id": "i1000000-0000-0000-0000-000000000002",
+    "customer_id": "c1000000-0000-0000-0000-000000000002",
+    "invoice_number": "INV-2026-002",
+    "invoice_date": "2026-08-15",
+    "due_date": "2026-09-15",
+    "subtotal": "100000.0000",
+    "cgst_amount": "0.0000",
+    "sgst_amount": "0.0000",
+    "igst_amount": "12000.0000",
+    "total_amount": "112000.0000",
+    "paid_amount": "0.0000",
+    "outstanding_balance": "112000.0000",
+    "status": "overdue",
+    "lines": [
+      {
+        "description": "Woven Cotton Fabrics 400m",
+        "hsn_sac_code": "5208",
+        "quantity": "400.0000",
+        "unit_price": "250.0000",
+        "tax_rate": "12.00",
+        "line_total": "112000.0000"
+      }
+    ]
+  },
+  {
+    "id": "i1000000-0000-0000-0000-000000000003",
+    "customer_id": "c1000000-0000-0000-0000-000000000003",
+    "invoice_number": "INV-2026-003",
+    "invoice_date": "2026-09-20",
+    "due_date": "2026-10-05",
+    "subtotal": "50000.0000",
+    "cgst_amount": "0.0000",
+    "sgst_amount": "0.0000",
+    "igst_amount": "2500.0000",
+    "total_amount": "52500.0000",
+    "paid_amount": "0.0000",
+    "outstanding_balance": "52500.0000",
+    "status": "overdue",
+    "lines": [
+      {
+        "description": "Polyester Blended Fabric 200m",
+        "hsn_sac_code": "5513",
+        "quantity": "200.0000",
+        "unit_price": "250.0000",
+        "tax_rate": "5.00",
+        "line_total": "52500.0000"
+      }
+    ]
+  },
+  {
+    "id": "i1000000-0000-0000-0000-000000000004",
+    "customer_id": "c1000000-0000-0000-0000-000000000001",
+    "invoice_number": "INV-2026-004",
+    "invoice_date": "2026-08-01",
+    "due_date": "2026-08-31",
+    "subtotal": "100000.0000",
+    "cgst_amount": "2500.0000",
+    "sgst_amount": "2500.0000",
+    "igst_amount": "0.0000",
+    "total_amount": "105000.0000",
+    "paid_amount": "0.0000",
+    "outstanding_balance": "105000.0000",
+    "status": "overdue",
+    "lines": [
+      {
+        "description": "Speciality Dyed Denim 250m",
+        "hsn_sac_code": "5209",
+        "quantity": "250.0000",
+        "unit_price": "400.0000",
+        "tax_rate": "5.00",
+        "line_total": "105000.0000"
+      }
+    ]
+  }
+]

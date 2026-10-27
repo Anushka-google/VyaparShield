@@ -1,0 +1,63 @@
+{
+  "tenant": {
+    "name": "Acme Textiles MSME",
+    "gstin": "27AAAAA0000A1Z5",
+    "pan": "AAAAA0000A",
+    "state_code": "27",
+    "currency": "INR"
+  },
+  "customers": [
+    {
+      "id": "c1000000-0000-0000-0000-000000000001",
+      "name": "Bharat Garments Ltd",
+      "gstin": "27BBBBB1111B1Z2",
+      "pan": "BBBBB1111B",
+      "state_code": "27",
+      "email": "billing@bharatgarments.in",
+      "phone": "+919820012345",
+      "credit_period_days": 30,
+      "aliases": [
+        "BHARAT GARMENTS MUMBAI",
+        "BHARAT GARMENTS PVT LTD",
+        "UPI/BHARATGARMENTS"
+      ]
+    },
+    {
+      "id": "c1000000-0000-0000-0000-000000000002",
+      "name": "Sharma Handlooms",
+      "gstin": "07CCCCC2222C1Z3",
+      "pan": "CCCCC2222C",
+      "state_code": "07",
+      "email": "accounts@sharmahandlooms.com",
+      "phone": "+919811098765",
+      "credit_period_days": 45,
+      "aliases": [
+        "SHARMA ENTERPRISES DELHI",
+        "SHARMA HANDLOOMS PROP"
+      ]
+    },
+    {
+      "id": "c1000000-0000-0000-0000-000000000003",
+      "name": "Vardhman Weaving Mills",
+      "gstin": "24DDDDD3333D1Z4",
+      "pan": "DDDDD3333D",
+      "state_code": "24",
+      "email": "finance@vardhmanmills.in",
+      "phone": "+919879054321",
+      "credit_period_days": 15,
+      "aliases": [
+        "VARDHMAN AHMEDABAD",
+        "VARDHMAN MILLS"
+      ]
+    }
+  ],
+  "vendors": [
+    {
+      "id": "v1000000-0000-0000-0000-000000000001",
+      "name": "Gujarat Raw Yarns Co",
+      "gstin": "24EEEEE4444E1Z5",
+      "bank_account_no": "XXXX-XXXX-9876",
+      "ifsc_code": "HDFC0000123"
+    }
+  ]
+}
