@@ -3,6 +3,14 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+DB_FILE = BACKEND_DIR / "vyaparshield.db"
+DEFAULT_SQLITE_URL = f"sqlite+aiosqlite:///{DB_FILE.as_posix()}"
+DEFAULT_SYNC_SQLITE_URL = f"sqlite:///{DB_FILE.as_posix()}"
+
+
 class Settings(BaseSettings):
     # Core Application
     APP_NAME: str = "NexusOps AI"
@@ -19,9 +27,9 @@ class Settings(BaseSettings):
     BACKEND_HOST: str = "0.0.0.0"
     BACKEND_PORT: int = 8000
     
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://nexusops:nexusops_secure_password@localhost:5432/nexusops_db"
-    DATABASE_SYNC_URL: str = "postgresql+psycopg2://nexusops:nexusops_secure_password@localhost:5432/nexusops_db"
+    # Database (defaults to local SQLite with absolute path for zero-friction local execution)
+    DATABASE_URL: str = DEFAULT_SQLITE_URL
+    DATABASE_SYNC_URL: str = DEFAULT_SYNC_SQLITE_URL
     
     # Redis & Task Queue
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -30,7 +38,7 @@ class Settings(BaseSettings):
     
     # Object Storage
     STORAGE_BACKEND: str = "local"
-    LOCAL_STORAGE_DIR: str = "./storage_data"
+    LOCAL_STORAGE_DIR: str = str(BACKEND_DIR / "storage_data")
     
     # LLM & AI Providers
     LLM_PROVIDER: str = "gemini"
@@ -53,7 +61,7 @@ class Settings(BaseSettings):
     PROMETHEUS_METRICS_ENABLED: bool = True
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[str(BACKEND_DIR.parent / ".env"), str(BACKEND_DIR / ".env"), ".env"],
         env_file_encoding="utf-8",
         extra="ignore"
     )

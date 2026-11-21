@@ -59,6 +59,8 @@ dist-ssr/
 postgres_data/
 redis_data/
 minio_data/
+storage_data/
+backend/storage_data/
 *.sqlite
 *.db
 
