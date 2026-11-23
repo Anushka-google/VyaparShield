@@ -13,7 +13,7 @@ settings = get_settings()
 
 # SQLAlchemy 2.0 Async Engine with robust connection pooling
 engine_kwargs = {"echo": settings.DEBUG, "future": True}
-if "sqlite" in settings.DATABASE_URL:
+if "sqlite" in settings.async_database_url:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 else:
     engine_kwargs.update({
@@ -22,7 +22,7 @@ else:
         "pool_pre_ping": True,
     })
 
-engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
+engine = create_async_engine(settings.async_database_url, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

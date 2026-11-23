@@ -1,0 +1,62 @@
+services:
+  # =========================================================================
+  # 1. FastAPI Backend Web Service
+  # =========================================================================
+  - type: web
+    name: vyaparshield-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vyaparshield-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: STORAGE_BACKEND
+        value: local
+
+  # =========================================================================
+  # 2. React + Vite Frontend (Static Site with CDN & Global TLS)
+  # =========================================================================
+  - type: web
+    name: vyaparshield-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.14.0
+      - key: VITE_BACKEND_URL
+        fromService:
+          type: web
+          name: vyaparshield-backend
+          property: host
+
+databases:
+  # =========================================================================
+  # 3. PostgreSQL Managed Database
+  # =========================================================================
+  - name: vyaparshield-db
+    databaseName: vyaparshield
+    user: vyaparshield
+    region: oregon
+    plan: free

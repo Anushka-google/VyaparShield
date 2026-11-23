@@ -12,6 +12,11 @@ import {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'finance' | 'incidents' | 'approvals' | 'security'>('finance');
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL
+    ? (import.meta.env.VITE_BACKEND_URL.startsWith('http')
+        ? import.meta.env.VITE_BACKEND_URL
+        : `https://${import.meta.env.VITE_BACKEND_URL}`)
+    : 'http://127.0.0.1:8000';
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans">
@@ -185,13 +190,13 @@ export default function App() {
                   </p>
                 </div>
                 <a
-                  href="http://127.0.0.1:8000/dashboard"
+                  href={`${backendBaseUrl}/dashboard`}
                   target="_blank"
                   rel="noreferrer"
                   className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap"
                 >
                   <Activity className="w-4 h-4" />
-                  Launch Live Dashboard (Port 8000)
+                  Launch Live Dashboard
                 </a>
               </div>
 
