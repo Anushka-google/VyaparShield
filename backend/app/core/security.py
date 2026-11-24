@@ -65,7 +65,42 @@ async def get_current_context(
     except (JWTError, ValueError):
         raise credentials_exception
 
-    return AuthenticatedContext(user_id=user_id, tenant_id=tenant_id, role=role, email=email)
+    # Authoritative Database Checks for User Status and Active Tenant Membership
+    from app.models.entities import User, Membership
+
+    user_res = await db.execute(select(User).where(User.id == user_id))
+    user = user_res.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account does not exist or has been deleted.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account has been deactivated or revoked.",
+        )
+
+    mem_res = await db.execute(
+        select(Membership).where(
+            Membership.user_id == user_id,
+            Membership.tenant_id == tenant_id,
+        )
+    )
+    membership = mem_res.scalar_one_or_none()
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have an active membership in this organization.",
+        )
+
+    return AuthenticatedContext(
+        user_id=user_id,
+        tenant_id=tenant_id,
+        role=membership.role,
+        email=user.email,
+    )
 
 
 def require_roles(allowed_roles: List[str]) -> Callable:

@@ -1,14 +1,23 @@
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, Set
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 DB_FILE = BACKEND_DIR / "vyaparshield.db"
 DEFAULT_SQLITE_URL = f"sqlite+aiosqlite:///{DB_FILE.as_posix()}"
 DEFAULT_SYNC_SQLITE_URL = f"sqlite:///{DB_FILE.as_posix()}"
+
+INSECURE_SECRET_PLACEHOLDERS: Set[str] = {
+    "default-insecure-secret-key-change-in-production-min32",
+    "change-this-to-a-secure-random-secret-key-in-production-min-32-chars",
+    "secret",
+    "secretkey",
+    "changeme",
+    "password",
+    "12345678901234567890123456789012",
+}
 
 
 class Settings(BaseSettings):
@@ -40,8 +49,12 @@ class Settings(BaseSettings):
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return url
     
-    # Redis & Task Queue
+    # Redis & Readiness
     REDIS_URL: str = "redis://localhost:6379/0"
+    REQUIRE_REDIS_READY: bool = False
+    REDIS_TIMEOUT_SECONDS: float = 2.0
+    DB_TIMEOUT_SECONDS: float = 2.0
+
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
     
@@ -68,6 +81,26 @@ class Settings(BaseSettings):
     ENABLE_OPENTELEMETRY: bool = False
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
     PROMETHEUS_METRICS_ENABLED: bool = True
+
+    @model_validator(mode="after")
+    def validate_production_configuration(self) -> "Settings":
+        env_normalized = self.APP_ENV.strip().lower()
+        is_production = env_normalized in ("production", "prod", "staging")
+
+        if is_production:
+            secret = (self.SECRET_KEY or "").strip()
+            if not secret or secret in INSECURE_SECRET_PLACEHOLDERS or len(secret) < 32 or "change-in-production" in secret:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION ERROR: When APP_ENV='production', a secure, "
+                    "non-placeholder SECRET_KEY with at least 32 characters must be provided via the "
+                    "environment."
+                )
+            if self.DEBUG:
+                raise ValueError(
+                    "CRITICAL CONFIGURATION ERROR: DEBUG mode cannot be enabled (DEBUG=True) "
+                    "when running in production (APP_ENV='production')."
+                )
+        return self
 
     model_config = SettingsConfigDict(
         env_file=[str(BACKEND_DIR.parent / ".env"), str(BACKEND_DIR / ".env"), ".env"],

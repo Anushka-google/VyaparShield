@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -64,30 +62,32 @@ services:
     networks:
       - nexusops_net
 
-  worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: nexusops_worker
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
-      - DATABASE_SYNC_URL=postgresql+psycopg2://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
-    volumes:
-      - ./backend:/app
-      - ./workers:/app/workers
-      - ./storage_data:/app/storage_data
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: celery -A workers.celery_app worker -l info --concurrency=2
-    networks:
-      - nexusops_net
+  # Note: Background worker service is commented out until Celery distributed tasks are implemented.
+  # Current OCR extraction and reconciliation are handled asynchronously inside the FastAPI backend.
+  # worker:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: nexusops_worker
+  #   restart: unless-stopped
+  #   environment:
+  #     - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+  #     - DATABASE_SYNC_URL=postgresql+psycopg2://${POSTGRES_USER:-nexusops}:${POSTGRES_PASSWORD:-nexusops_secure_password}@postgres:5432/${POSTGRES_DB:-nexusops_db}
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - CELERY_BROKER_URL=redis://redis:6379/1
+  #     - CELERY_RESULT_BACKEND=redis://redis:6379/2
+  #   volumes:
+  #     - ./backend:/app
+  #     - ./workers:/app/workers
+  #     - ./storage_data:/app/storage_data
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   command: celery -A workers.celery_app worker -l info --concurrency=2
+  #   networks:
+  #     - nexusops_net
 
   frontend:
     build:
@@ -96,10 +96,7 @@ services:
     container_name: nexusops_frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "${FRONTEND_PORT:-3000}:80"
     environment:
       - VITE_API_URL=http://localhost:8000/api/v1
     depends_on:
