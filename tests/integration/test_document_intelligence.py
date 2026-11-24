@@ -1,6 +1,6 @@
 import pytest
 import io
-import fitz  # PyMuPDF
+import pymupdf
 from decimal import Decimal
 from datetime import date
 from httpx import AsyncClient, ASGITransport
@@ -18,7 +18,7 @@ def create_sample_gst_invoice_pdf(
     buyer_gstin: str = "24BBBBB2222B1Z2",
     total_amount: str = "26250.00",
 ) -> bytes:
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page()
 
     text = f"""

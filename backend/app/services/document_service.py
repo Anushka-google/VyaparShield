@@ -6,7 +6,7 @@ import hashlib
 from decimal import Decimal, InvalidOperation
 from datetime import date, datetime, timezone
 from typing import List, Optional, Dict, Any, Tuple
-import fitz  # PyMuPDF
+import pymupdf
 from fastapi import UploadFile, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -124,15 +124,15 @@ class DocumentService:
         tenant_id: uuid.UUID,
         file_bytes: bytes,
     ) -> Tuple[ExtractedInvoiceData, DocumentValidationResult]:
-        doc_fitz = fitz.open(stream=file_bytes, filetype="pdf")
+        doc_pdf = pymupdf.open(stream=file_bytes, filetype="pdf")
         full_text = ""
         extracted = ExtractedInvoiceData()
         errors: List[str] = []
         warnings: List[str] = []
 
         # 1. Text and Block Extraction
-        for page_idx in range(len(doc_fitz)):
-            page = doc_fitz[page_idx]
+        for page_idx in range(len(doc_pdf)):
+            page = doc_pdf[page_idx]
             full_text += page.get_text() + "\n"
 
             # Search invoice number
